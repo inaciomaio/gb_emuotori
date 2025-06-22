@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "cpu.h"
+#include "memory.h"
 
 // we define the maximum size for the input ROM (2MB)
 #define ROM_MAX_SIZE 0x200000
@@ -33,8 +34,10 @@ int main (int argc, char *argv[]) {
 	}
 
 	size_t rom_size = fread(rom, 1, ROM_MAX_SIZE, f);
+	mem_attach_rom(rom, rom_size);
 	fclose(f);
 	printf("Loaded ROM: %s (%zu bytes)\n", argv[1], rom_size);
+	
 
 	// === SETUP CPU ===
 	CPU cpu;
@@ -53,11 +56,10 @@ int main (int argc, char *argv[]) {
 	printf("First opcode @0x0100 = 0x%02X\n", opcode);
 
 	// start execution loop
-
 	int cycles = 0;
 
-	while(cpu.pc < rom_size && cycles < 10) {
-		opcode = rom[cpu.pc];
+	while(cpu.pc < 0x10000 && cycles < 10) {
+		opcode = mem_read(cpu.pc);
 		printf("PC=0x%04X  OPCODE=0x%02X\n", cpu.pc, opcode);
 
 		switch(opcode) {
@@ -65,9 +67,11 @@ int main (int argc, char *argv[]) {
 				printf("	-> NOP\n");
 				cpu.pc += 1;
 				break;
-
+				
 			case 0xC3: {
-				uint16_t addr = rom[cpu.pc + 1] | (rom[cpu.pc + 2] << 8);
+				uint16_t lo = mem_read(cpu.pc + 1);
+				uint16_t hi = mem_read(cpu.pc + 2);
+				uint16_t addr = lo | (hi << 8);
 				printf("	-> JP 0x%04X\n", addr);
 				cpu.pc = addr;
 				break;
