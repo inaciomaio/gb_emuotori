@@ -52,50 +52,12 @@ int main (int argc, char *argv[]) {
 		return 1;
 	}
 
-	uint8_t opcode = rom[cpu.pc];
-	printf("First opcode @0x0100 = 0x%02X\n", opcode);
-
 	// start execution loop
 	int cycles = 0;
 
 	while(cpu.pc < 0x10000 && cycles < 10) {
-		opcode = mem_read(cpu.pc);
-		printf("PC=0x%04X  OPCODE=0x%02X\n", cpu.pc, opcode);
-
-		switch(opcode) {
-			case 0x00: // NOP (NO OPERATION)
-				printf("	-> NOP\n");
-				cpu.pc += 1;
-				break;
-				
-			case 0xC3: {
-				uint16_t lo = mem_read(cpu.pc + 1);
-				uint16_t hi = mem_read(cpu.pc + 2);
-				uint16_t addr = lo | (hi << 8);
-				printf("	-> JP 0x%04X\n", addr);
-				cpu.pc = addr;
-				break;
-			}
-
-			case 0xF3:  // DI
-			    printf("    -> DI (disable interrupts)\n");
-				// TODO: Implement IME flag (interrupt master enable)
-				cpu.pc += 1;
-				break;
-
-			case 0xAF: // XOR A
-				printf("	-> XOR A\n");
-				cpu.a ^= cpu.a;
-				cpu.f = 0x80;
-				cpu.pc += 1;
-				break;
-
-			default:
-				printf("	!! Unknown opcode : 0x%02X\n", opcode);
-				return 1;
-		}
-
-		cycles++;
+			cpu_step(&cpu);
+			cycles++;
 	}
 
 	free(rom);
