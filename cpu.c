@@ -27,6 +27,41 @@ void cpu_step(CPU *cpu) {
 			cpu->pc += 1;
 			break;
 
+		case 0x01:
+			
+			break;
+
+		case 0x02:
+			break;
+
+		case 0x03:
+			break;
+			
+		case 0x04:
+			break;
+			
+		case 0x05:
+			break;
+			
+		case 0x06: //LD B, n8
+			printf("	-> LOAD INTO B THE VALUE n8");
+			uint8_t n = mem_read(cpu->pc + 1);
+			cpu->b = n;
+			cpu->pc += 2;
+			break;
+
+		case 0x07:
+			break;
+
+		case 0x08:
+			break;
+
+		case 0x09:
+			break;
+
+		case 0x0A:
+			break;
+			
 		case 0xC3: { // jump
 			uint16_t lo = mem_read(cpu->pc + 1);
 			uint16_t hi = mem_read(cpu->pc + 2);
@@ -70,13 +105,25 @@ void cpu_step(CPU *cpu) {
 			cpu->pc += 1;
 			break;
 
-		case 0xEA:
-			uint16_t lo = mem_read(cpu->pc + 1)
-			uint16_t hi = mem_read(cpu->pc + 2)
+		case 0xEA: {
+			uint16_t lo = mem_read(cpu->pc + 1);
+			uint16_t hi = mem_read(cpu->pc + 2);
 			uint16_t addr = lo | (hi << 8);
+			mem_write(addr, cpu->a);
 			cpu->pc += 3;
 			break;
+		}
 
+		case 0xFA: { // LD A, (16a)
+			uint16_t lo = mem_read(cpu->pc + 1);
+			uint16_t hi = mem_read(cpu->pc + 2);		
+			uint16_t addr = lo | (hi << 8);
+			cpu->a = mem_read(addr);
+			cpu->pc +=3;
+			break;
+		}
+
+			
 		default:
 			printf("  !! Unknown opcode: 0x%02X\n", opcode);
 			exit(1);
